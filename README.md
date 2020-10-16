@@ -1,2 +1,8 @@
 # kern-mod-tpsleds
-LTPS LEDS kernel-level interface module
+LTPS Blue LEDs kernel module
+
+Binary interface is at
+```
+/proc/tpsleds
+```
+tpsled app is required.
