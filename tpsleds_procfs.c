@@ -12,11 +12,11 @@ static int dv_pf_N_R( struct file *_f, char __user *_buf, size_t _s, loff_t *_l)
  if ( *_l > 0) return( 0);
  n = simple_strtol( _f->f_path.dentry->d_iname, NULL, 10);
  *_l += sizeof( ret);
- memset( lbuf, 0, 10);
+ memset( lbuf, 0, sizeof( lbuf));
  ret = ( 1 && ( leds_current & 0x01 << n));
- sprintf( lbuf, "%d", ret);
- if ( copy_to_user( _buf, lbuf, 1)) return( -EFAULT);
- *_l += ret = strlen( lbuf);
+ ret = sprintf( lbuf, "%d", ret);
+ if ( copy_to_user( _buf, lbuf, ret)) return( -EFAULT);
+ *_l += ret;
  return( ret);  }
 static int dv_pf_N_W( struct file *_f, const char __user *_buf, size_t _cnt, loff_t *_l) {
  unsigned char n, v = 0x01;
@@ -47,12 +47,14 @@ static int dv_pf_N_W( struct file *_f, const char __user *_buf, size_t _cnt, lof
 static int dv_pf_B_R( struct file *_f, char __user *_buf, size_t _s, loff_t *_l) {
  unsigned char n;
  unsigned int ret;
+ unsigned char lbuf[ 10];
  if ( *_l > 0) return( 0);
  n = simple_strtol( _f->f_path.dentry->d_iname, NULL, 10);
  ret = ltimers[ n].timeout;
- memset( _buf, 0, _s);
- sprintf( _buf, "%d", ret);
- *_l += ret = strlen( _buf);
+ memset( lbuf, 0, sizeof( lbuf));
+ ret = sprintf( lbuf, "%d", ret);
+ if ( copy_to_user( _buf, lbuf, ret)) return( -EFAULT);
+ *_l += ret;
 //printk( KERN_INFO "[%d]:%d l:%d\n", n, ret, *_l);
  return( ret);  }
 static int dv_pf_B_W( struct file *_f, const char __user *_buf, size_t _cnt, loff_t *_l) {
