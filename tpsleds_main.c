@@ -66,7 +66,8 @@ void tps_led_timer( unsigned long _d) {
 static int tpsleds_probe( struct platform_device *_pdev) {
  int ret = 0;
  unsigned char init_val = 0x7;
- u32 *init_v32p;
+ const void *ofpar;
+ u32 init_v32;
  int lenp;
  leds_num = TPS_MAX_LEDS;
  if ( !_pdev->dev.of_node) {
@@ -96,15 +97,14 @@ static int tpsleds_probe( struct platform_device *_pdev) {
    return( ret);   }
  gpio_direction_output( tpsleds_d.pin_d, 0);		// for data
  gpio_direction_output( tpsleds_d.pin_f, 0);		// front
- init_v32p = of_get_property( _pdev->dev.of_node, "init-val", &lenp);
- if ( init_v32p) {
-   *init_v32p = be32_to_cpup( init_v32p);
-   init_val = ( unsigned char)( *init_v32p);
+ ofpar = of_get_property( _pdev->dev.of_node, "init-val", &lenp);
+ if ( ofpar) {
+   init_val = be32_to_cpup( ofpar);
  }
- init_v32p = of_get_property( _pdev->dev.of_node, "max-leds", &lenp);
- if ( init_v32p) {
-   *init_v32p = be32_to_cpup( init_v32p);
-   if ( ( *init_v32p) < 32) leds_num = ( unsigned char)( *init_v32p);
+ ofpar = of_get_property( _pdev->dev.of_node, "max-leds", &lenp);
+ if ( ofpar) {
+   init_v32 = be32_to_cpup( ofpar);
+   if ( init_v32 < 32) leds_num = init_v32;
  }
  tps_leds_set( init_val);
  for ( lenp = 0; lenp < leds_num; lenp++) {
