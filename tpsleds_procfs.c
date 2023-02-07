@@ -66,10 +66,30 @@ static int dv_pf_B_W( struct file *_f, const char __user *_buf, size_t _cnt, lof
 //printk( KERN_INFO "[%d]:%dms\n", n, v);
  return( _cnt);  }
 
-struct proc_dir_entry *tpsleds_procfs_root;
+// fo_N: on/off
+// fo_B: blink freq
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
+static const struct proc_ops fo_N = {
+ .proc_open = dv_pf_open,
+ .proc_lseek =  no_llseek,
+ .proc_release = dv_pf_release,
+ .proc_read = dv_pf_N_R,
+ .proc_write = dv_pf_N_W,
+};
+static struct proc_ops fo_B;
+#else
+static const struct file_operations fo_N = {
+ .owner = THIS_MODULE,
+ .open = dv_pf_open,
+ .llseek =  no_llseek,
+ .release = dv_pf_release,
+ .read = dv_pf_N_R,
+ .write = dv_pf_N_W,
+};
+static struct file_operations fo_B;
+#endif
 
-static struct file_operations fo_N;	// on/off
-static struct file_operations fo_B;	// blink freq
+struct proc_dir_entry *tpsleds_procfs_root;
 
 // ---------- main (exported) functions
 void tpsleds_procfs_init( void) {
@@ -77,13 +97,13 @@ void tpsleds_procfs_init( void) {
  int i = 0;
  char tmps[ 10];
  // register procfs entry
- fo_N.owner = fo_B.owner = THIS_MODULE;
- fo_N.open = fo_B.open = dv_pf_open;
- fo_N.llseek =  fo_B.llseek = no_llseek;
- fo_N.release =  fo_B.release = dv_pf_release;
+ fo_B = fo_N;
  tpsleds_procfs_root = proc_mkdir( TPSLEDS_PROCFS_DIR, NULL);
- fo_N.read = dv_pf_N_R;  fo_N.write = dv_pf_N_W;
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
+ fo_B.proc_read = dv_pf_B_R;  fo_B.proc_write = dv_pf_B_W;
+#else
  fo_B.read = dv_pf_B_R;  fo_B.write = dv_pf_B_W;
+#endif
  for ( i = 0; i < TPS_MAX_LEDS; i++) {
    memset( tmps, 0, 10);
    sprintf( tmps, "%d", i);
